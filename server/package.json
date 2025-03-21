@@ -1,9 +1,14 @@
 {
   "name": "forgemind-ai-platform",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Autonomous AI agent framework",
+  "main": "dist/app.js",
   "scripts": {
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "dev": "ts-node src/app.ts",
+    "watch": "ts-node-dev --respawn src/app.ts",
+    "init-db": "ts-node src/scripts/initDatabase.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -41,6 +46,7 @@
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.13.11",
     "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.2"
   }
 }
