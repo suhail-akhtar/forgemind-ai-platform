@@ -4,26 +4,29 @@ import { ReActAgent } from '../agents/ReActAgent';
 import { ToolCallAgent } from '../agents/ToolCallAgent';
 import { PlanningAgent } from '../agents/PlanningAgent';
 import { Memory } from './Memory';
-import { OpenAIService } from '../llm/OpenAIService';
+import { LLMProvider, LLMConfig, LLMService } from '../llm/LLMInterface';
+import {OpenAIService} from '../llm/OpenAIService';
+import { LLMFactory } from '../llm/LLMFactory';
 import { ToolCollection } from './ToolCollection';
 import { ToolFactory } from './ToolFactory';
 import { RoleType } from '../types/agent';
 import { logger } from '../utils/logger';
 
 export class AgentFactory {
-  private readonly llm: OpenAIService;
+  private readonly llm: LLMService;
   private readonly tools: ToolCollection;
   
   constructor(
-    apiKey: string,
-    model: string = 'gpt-4o',
+    llmConfig: LLMConfig,
+    provider: LLMProvider = LLMProvider.OPENAI,
     tools?: ToolCollection,
     config?: {
       searchApiKey?: string;
       searchEngineId?: string;
     }
   ) {
-    this.llm = new OpenAIService(apiKey, model);
+    // Create LLM service based on provider
+    this.llm = LLMFactory.createLLMService(provider, llmConfig);
     
     if (tools) {
       this.tools = tools;
@@ -34,7 +37,7 @@ export class AgentFactory {
       });
     }
     
-    logger.info(`Agent factory initialized with model: ${model}`);
+    logger.info(`Agent factory initialized with model: ${this.llm.model} using provider: ${provider}`);
     logger.info(`Available tools: ${this.tools.getToolNames().join(', ')}`);
   }
   
@@ -47,7 +50,7 @@ export class AgentFactory {
     }
   ): ReActAgent {
     const agentMemory = memory || new Memory();
-    return new ReActAgent(name, agentMemory, this.llm, config);
+    return new ReActAgent(name, agentMemory, this.llm as OpenAIService, config);
   }
   
   createToolCallAgent(
@@ -59,7 +62,7 @@ export class AgentFactory {
     }
   ): ToolCallAgent {
     const agentMemory = memory || new Memory();
-    return new ToolCallAgent(name, agentMemory, this.llm, this.tools, config);
+    return new ToolCallAgent(name, agentMemory, this.llm as OpenAIService, this.tools, config);
   }
   
   createPlanningAgent(
@@ -72,7 +75,7 @@ export class AgentFactory {
     }
   ): PlanningAgent {
     const agentMemory = memory || new Memory();
-    return new PlanningAgent(name, agentMemory, this.llm, this.tools, config);
+    return new PlanningAgent(name, agentMemory, this.llm as OpenAIService, this.tools, config);
   }
   
   /**

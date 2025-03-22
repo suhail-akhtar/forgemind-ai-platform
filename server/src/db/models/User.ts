@@ -2,6 +2,7 @@
 import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../config';
 import bcrypt from 'bcrypt';
+import { LLMProvider } from '../../llm/LLMInterface';
 
 interface UserAttributes {
   id: number;
@@ -12,6 +13,7 @@ interface UserAttributes {
   model?: string;
   maxTokens?: number;
   temperature?: number;
+  llmProvider?: LLMProvider;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -27,6 +29,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   public model?: string;
   public maxTokens?: number;
   public temperature?: number;
+  public llmProvider?: LLMProvider;
   
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -84,6 +87,11 @@ User.init(
       type: DataTypes.FLOAT,
       allowNull: true,
       defaultValue: 0.7,
+    },
+    llmProvider: {
+      type: DataTypes.ENUM('openai', 'azure_openai', 'google_gemini'),
+      allowNull: true,
+      defaultValue: 'openai',
     },
   },
   {

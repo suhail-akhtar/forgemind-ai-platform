@@ -8,8 +8,7 @@
     "start": "node dist/app.js",
     "dev": "ts-node src/app.ts",
     "watch": "ts-node-dev --respawn src/app.ts",
-    "init-db": "ts-node src/scripts/initDatabase.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "init-db": "ts-node src/scripts/initDatabase.ts"
   },
   "repository": {
     "type": "git",
@@ -24,6 +23,7 @@
   },
   "homepage": "https://github.com/suhail-akhtar/forgemind-ai-platform#readme",
   "dependencies": {
+    "@google/generative-ai": "^0.24.0",
     "axios": "^1.8.4",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",

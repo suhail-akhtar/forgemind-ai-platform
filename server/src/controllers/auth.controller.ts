@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import { User, Session } from '../db/models';
 import { logger } from '../utils/logger';
+import { LLMProvider } from '../llm/LLMInterface';
 
 export class AuthController {
   async login(req: Request, res: Response): Promise<void> {
@@ -47,6 +48,7 @@ export class AuthController {
           id: user.id,
           email: user.email,
           name: user.name,
+          llmProvider: user.llmProvider,
         },
       });
     } catch (error: any) {
@@ -97,6 +99,7 @@ export class AuthController {
           id: user.id,
           email: user.email,
           name: user.name,
+          llmProvider: user.llmProvider,
         },
       });
     } catch (error: any) {
@@ -135,7 +138,7 @@ export class AuthController {
       }
       
       const user = await User.findByPk(userId, {
-        attributes: ['id', 'email', 'name', 'model', 'maxTokens', 'temperature'],
+        attributes: ['id', 'email', 'name', 'model', 'maxTokens', 'temperature', 'llmProvider'],
       });
       
       if (!user) {
@@ -159,12 +162,20 @@ export class AuthController {
         return;
       }
       
-      const { name, apiKey, model, maxTokens, temperature } = req.body;
+      const { name, apiKey, model, maxTokens, temperature, llmProvider } = req.body;
       
       const user = await User.findByPk(userId);
       
       if (!user) {
         res.status(404).json({ error: 'User not found' });
+        return;
+      }
+      
+      // Validate llmProvider if provided
+      if (llmProvider && !Object.values(LLMProvider).includes(llmProvider as LLMProvider)) {
+        res.status(400).json({ 
+          error: `Invalid LLM provider. Must be one of: ${Object.values(LLMProvider).join(', ')}` 
+        });
         return;
       }
       
@@ -174,6 +185,7 @@ export class AuthController {
       if (model) user.model = model;
       if (maxTokens !== undefined) user.maxTokens = maxTokens;
       if (temperature !== undefined) user.temperature = temperature;
+      if (llmProvider) user.llmProvider = llmProvider as LLMProvider;
       
       await user.save();
       
@@ -185,6 +197,7 @@ export class AuthController {
           model: user.model,
           maxTokens: user.maxTokens,
           temperature: user.temperature,
+          llmProvider: user.llmProvider,
         },
       });
     } catch (error: any) {

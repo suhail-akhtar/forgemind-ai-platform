@@ -4,6 +4,8 @@ import { Conversation, Message, User } from '../db/models';
 import { AgentFactory } from '../services/AgentFactory';
 import { RoleType } from '../types/agent';
 import { logger } from '../utils/logger';
+import { LLMProvider, LLMConfig } from '../llm/LLMInterface';
+import { config } from '../config/env';
 
 export class ConversationController {
   async getConversations(req: Request, res: Response): Promise<void> {
@@ -236,10 +238,54 @@ export class ConversationController {
         name: msg.name,
       }));
       
-      // Create agent factory
+      // Determine which LLM provider to use (from user preferences or system default)
+      const provider = user.llmProvider || config.llm.provider;
+      
+      // Configure LLM based on provider
+      let llmConfig: LLMConfig;
+      
+      switch (provider) {
+        case LLMProvider.AZURE_OPENAI:
+          llmConfig = {
+            apiKey: user.apiKey,
+            model: user.model || config.llm.azureOpenai.model,
+            maxTokens: user.maxTokens || config.llm.azureOpenai.maxTokens,
+            temperature: user.temperature || config.llm.azureOpenai.temperature,
+            endpoint: config.llm.azureOpenai.endpoint,
+            apiVersion: config.llm.azureOpenai.apiVersion,
+            deploymentName: config.llm.azureOpenai.deploymentName
+          };
+          break;
+          
+        case LLMProvider.GOOGLE_GEMINI:
+          llmConfig = {
+            apiKey: user.apiKey,
+            model: user.model || config.llm.googleGemini.model,
+            maxTokens: user.maxTokens || config.llm.googleGemini.maxTokens,
+            temperature: user.temperature || config.llm.googleGemini.temperature
+          };
+          break;
+          
+        case LLMProvider.OPENAI:
+        default:
+          llmConfig = {
+            apiKey: user.apiKey,
+            model: user.model || config.llm.openai.model,
+            maxTokens: user.maxTokens || config.llm.openai.maxTokens,
+            temperature: user.temperature || config.llm.openai.temperature
+          };
+          break;
+      }
+      
+      // Create agent factory with the appropriate config
       const agentFactory = new AgentFactory(
-        user.apiKey,
-        user.model || 'gpt-4o'
+        llmConfig,
+        provider as LLMProvider,
+        undefined, // Use default tools
+        {
+          searchApiKey: config.google.searchApiKey,
+          searchEngineId: config.google.searchEngineId
+        }
       );
       
       // Create planning agent with conversation history
