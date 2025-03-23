@@ -197,6 +197,7 @@ export class GeminiService implements LLMService {
     } catch (error: any) {
       logger.error(`Google Gemini ask error: ${error.message}`);
       throw new Error(`Failed to get response from Google Gemini: ${error.message}`);
+      
     }
   }
   

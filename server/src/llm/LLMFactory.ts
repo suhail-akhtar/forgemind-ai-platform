@@ -22,7 +22,7 @@ export class LLMFactory {
         
       default:
         logger.warn(`Unknown provider ${provider}, defaulting to OpenAI`);
-        return new OpenAIService(config);
+        return new OpenAIService(config); 
     }
   }
 }

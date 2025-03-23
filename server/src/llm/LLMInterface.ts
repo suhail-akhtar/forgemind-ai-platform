@@ -19,7 +19,7 @@ export enum LLMProvider {
   OPENAI = 'openai',
   AZURE_OPENAI = 'azure_openai',
   GOOGLE_GEMINI = 'google_gemini'
-}
+} 
 
 export interface LLMConfig {
   apiKey: string;

@@ -31,7 +31,7 @@ export class OpenAIService implements LLMService {
       });
       
       return response.choices[0].message.content || '';
-    } catch (error: any) {
+    } catch (error: any) { 
       logger.error(`LLM ask error: ${error.message}`);
       throw new Error(`Failed to get response: ${error.message}`);
     }
